@@ -247,8 +247,8 @@
 				&range 14 1 1
 				&range 15 1 0
 				&range 16 5 0  /* GPIO 2 */
-				&range 21 3 1
-				&range 24 4 1  /* GPIO 3 */
+				&range 21 3 0
+				&range 24 4 0  /* GPIO 3 */
 				&range 28 2 2
 				&range 86 1 1
 				&range 87 1 0
@@ -257,15 +257,14 @@
 				&range 37 1 2
 				&range 38 3 2  /* GPIO 6 */
 				&range 41 5 0
-				&range 46 8 1  /* GPIO 7 */
-				&range 54 8 1  /* GPIO 8 */
+				&range 46 8 0  /* GPIO 7 */
+				&range 54 8 0  /* GPIO 8, skip 62-63 */
 				&range 64 7 1  /* GPIO 9 */
-				&range 71 1 0
-				&range 72 6 1  /* GPIO 10 */
-				&range 78 1 0
-				&range 79 1 1
-				&range 80 6 1  /* GPIO 11 */
-				&range 70 2 1
+				&range 72 6 1  /* GPIO 10, RGMII */
+				&range 78 1 0  /* GPIO */
+				&range 79 1 1  /* RGMII */
+				&range 80 6 1  /* GPIO 11, RGMII*/
+				&range 70 2 1  /* RGMII */
 				&range 88 8 0  /* GPIO 12 */
 			>;
 
@@ -533,7 +532,7 @@
 			#gpio-cells = <2>;
 			interrupt-controller;
 			#interrupt-cells = <2>;
-			gpio-ranges = <&pmx0 0 64 7 &pmx0 7 71 1>;
+			gpio-ranges = <&pmx0 0 64 6 &pmx0 6 62 2>;
 			clocks = <&crg HISTB_APB_CLK>;
 			clock-names = "apb_pclk";
 		};

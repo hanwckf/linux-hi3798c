@@ -1047,7 +1047,7 @@ HI_S32 HI_DRV_LOG_KInit(HI_VOID)
 	return -1;
     }
 
-    LogUdiskInit(UdiskLogFile);
+    //LogUdiskInit(UdiskLogFile);
 
     LOGAddModule("ASYNC", HI_ID_ASYNC);
     LOGAddModule("VSYNC", HI_ID_VSYNC);

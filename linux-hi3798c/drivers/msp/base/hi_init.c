@@ -55,12 +55,12 @@ HI_S32 __init HI_DRV_LoadModules(HI_VOID)
 {
     GPIO_DRV_ModInit();
     // GPIOI2C_DRV_ModInit();
-    PDM_DRV_ModInit();
-    PQ_DRV_ModInit();
-    HDMI_DRV_ModInit();
-    VDP_DRV_ModInit();
+    //PDM_DRV_ModInit();
+    //PQ_DRV_ModInit();
+    //HDMI_DRV_ModInit();
+    //VDP_DRV_ModInit();
     TDE_DRV_ModInit();
-    HIFB_DRV_ModInit();
+    //HIFB_DRV_ModInit();
     // JPEG_DRV_ModInit();
     // PNG_DRV_ModInit();
     GFX2D_OS_ModInit();
@@ -71,7 +71,7 @@ HI_S32 __init HI_DRV_LoadModules(HI_VOID)
     ADSP_DRV_ModInit();
     AIAO_DRV_ModInit();
     ADEC_DRV_ModInit();
-    VPSS_DRV_ModInit();
+    //VPSS_DRV_ModInit();
     MCE_DRV_ModInit();
     // KEYLED_DRV_ModInit();
     // SCI_DRV_ModInit();

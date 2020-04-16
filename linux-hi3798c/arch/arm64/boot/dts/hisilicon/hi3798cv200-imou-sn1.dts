@@ -24,6 +24,34 @@
 		reg = <0x0 0x0 0x0 0x80000000>;
 	};
 
+	leds {
+		compatible = "gpio-leds";
+
+		sata-white {
+			label = "sata-white";
+			gpios = <&gpio3 0 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		sata-red {
+			label = "sata-red";
+			gpios = <&gpio2 6 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		pwr-white {
+			label = "pwr-white";
+			gpios = <&gpio2 5 GPIO_ACTIVE_LOW>;
+			default-state = "on";
+		};
+
+		pwr-red {
+			label = "pwr-red";
+			gpios = <&gpio3 1 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+	};
+
 	vcc_sata: regulator-vcc-sata {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc-sata";
@@ -63,12 +91,10 @@
 
 &i2c0 {
 	status = "okay";
-	label = "LS-I2C0";
 };
 
 &i2c2 {
 	status = "okay";
-	label = "LS-I2C1";
 };
 
 &ohci {
@@ -91,7 +117,6 @@
 
 &uart2 {
 	status = "okay";
-	label = "LS-UART0";
 };
 
 &xhci0 {
@@ -111,6 +136,32 @@
 	assigned-clocks = <&crg 80>;
 	assigned-clock-parents = <&crg 66>;
 	assigned-clock-rates = <25000000>;
+};
+
+&pmx0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <
+		&emmc_p1_pmx_cfg
+		&emmc_p2_pmx_cfg
+		&emmc_p3_pmx_cfg
+		&emmc_p4_pmx_cfg
+		&gpu_pmx_cfg
+		&i2c0_pmx_cfg
+		&gpio_pmx_cfg
+		&bt_uart2_p1_pmx_cfg
+		&bt_uart2_p2_pmx_cfg
+		&pcm_pmx_cfg
+		&i2c2_p1_pmx_cfg
+		&i2c2_p2_pmx_cfg
+		&mute_pmx_cfg
+		&spdif_pmx_cfg
+		&rgmii1_p1_pmx_cfg
+		&rgmii1_p2_pmx_cfg
+		&rgmii1_p3_pmx_cfg
+		&sdio0_p1_pmx0_cfg
+		&sdio0_p2_pmx0_cfg
+		&sdio0_p3_pmx0_cfg
+	>;
 };
 
 &mali {
