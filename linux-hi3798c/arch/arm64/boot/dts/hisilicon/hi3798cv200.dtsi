@@ -125,6 +125,12 @@
 		};
 	};
 
+	pmu {
+		compatible = "arm,armv8-pmuv3";
+		interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
 	gic: interrupt-controller@f1001000 {
 		compatible = "arm,gic-400";
 		reg = <0x0 0xf1001000 0x0 0x1000>,  /* GICD */
@@ -488,7 +494,7 @@
 			#gpio-cells = <2>;
 			interrupt-controller;
 			#interrupt-cells = <2>;
-			gpio-ranges = <&pmx0 0 38 3 &pmx0 0 41 5>;
+			gpio-ranges = <&pmx0 0 38 3 &pmx0 3 41 5>;
 			clocks = <&crg HISTB_APB_CLK>;
 			clock-names = "apb_pclk";
 		};
@@ -738,8 +744,19 @@
 			g-use-dma;
 			g-rx-fifo-size = <271>;
 			g-np-tx-fifo-size = <64>;
-			g-tx-fifo-size = <128 128>;
+			g-tx-fifo-size = <256>;
 			status = "disabled";
 		};
+
+		sata: hiahci@9900000 {
+			compatible = "generic-ahci";
+			reg = <0x9900000 0x1000>;
+			interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&combphy1 PHY_TYPE_SATA>;
+			phy-names = "sata-phy";
+			clocks = <&crg HISTB_SATA_BUS_CLK>;
+			status = "disabled";
+		};
+
 	};
 };

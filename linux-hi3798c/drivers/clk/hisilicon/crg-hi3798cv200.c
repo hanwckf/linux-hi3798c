@@ -79,6 +79,8 @@
 #define GPU_SRST_REQ			BIT(4)
 #define GPU_CKEN			BIT(0)
 
+#define PERI_CRG42_SATACTRL		0x00a8
+
 static const struct hisi_fixed_rate_clock hi3798cv200_fixed_rate_clks[] = {
 	{ HISTB_OSC_CLK, "clk_osc", NULL, 0, 24000000, },
 	{ HISTB_APB_CLK, "clk_apb", NULL, 0, 100000000, },
@@ -235,6 +237,9 @@ static const struct hisi_misc_clock hi3798cv200_misc_clks[] = {
 		USB3_VCC_SRST_REQ1, USB3_BUS_CKEN1|USB3_BUS_GM_CKEN1
 		|USB3_BUS_GS_CKEN1|USB3_UTMI_CKEN1|USB3_PIPE_CKEN1
 		|USB3_SUSPEND_CKEN1|USB3_REF_CKEN1 },
+	{ HISTB_SATA_BUS_CLK, "clk_sata", NULL, 0, PERI_CRG42_SATACTRL,
+		BIT(11) | BIT(10) | BIT(9) | BIT(8),
+		BIT(3) | BIT(2) | BIT(1) | BIT(0) },
 	{ HISTB_GPU_CLK, "clk_gpu", "gpu_mux", CLK_SET_RATE_PARENT,
 		PERI_CRG53_GPU, GPU_SRST_REQ, GPU_CKEN },
 	{ HISTB_SPI0_CLK, "clk_spi0", "clk_apb", CLK_SET_RATE_PARENT,

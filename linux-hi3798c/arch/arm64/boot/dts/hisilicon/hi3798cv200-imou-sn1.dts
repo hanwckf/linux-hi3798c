@@ -1,0 +1,123 @@
+/dts-v1/;
+/memreserve/ 0x00000000 0x04080000;
+/* reserved for bootloader */
+
+#include <dt-bindings/gpio/gpio.h>
+#include "hi3798cv200.dtsi"
+#include "poplar-pinctrl.dtsi"
+
+/ {
+	model = "imou-sn1";
+	compatible = "imou,sn1", "hisilicon,hi3798cv200";
+
+	aliases {
+		serial0 = &uart0;
+		serial2 = &uart2;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+
+	vcc_sata: regulator-vcc-sata {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc-sata";
+		gpio = <&gpio6 3 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+};
+
+&ehci {
+	status = "okay";
+};
+
+&emmc {
+	status = "okay";
+	num-slots = <1>;
+	fifo-depth = <256>;
+	clock-frequency = <100000000>;
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	non-removable;
+	bus-width = <8>;
+};
+
+&gmac1 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	phy-handle = <&eth_phy1>;
+	phy-mode = "rgmii-id";
+	hisilicon,phy-reset-delays-us = <30000 30000 50000>;
+
+	eth_phy1: phy@3 {
+		reg = <3>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	label = "LS-I2C0";
+};
+
+&i2c2 {
+	status = "okay";
+	label = "LS-I2C1";
+};
+
+&ohci {
+	status = "okay";
+};
+
+&otg {
+	status = "okay";
+};
+
+&sd0 {
+	bus-width = <4>;
+	cap-sd-highspeed;
+	status = "okay";
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+	label = "LS-UART0";
+};
+
+&xhci0 {
+	status = "okay";
+};
+
+&xhci1 {
+	status = "okay";
+};
+
+&sata {
+	status = "okay";
+	target-supply = <&vcc_sata>;
+};
+
+&combphy1 {
+	assigned-clocks = <&crg 80>;
+	assigned-clock-parents = <&crg 66>;
+	assigned-clock-rates = <25000000>;
+};
+
+&mali {
+	status = "disabled";
+};
+
+&ir {
+	status = "okay";
+};
+
