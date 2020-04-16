@@ -185,8 +185,8 @@ static int histb_combphy_init(struct phy *phy)
 		udelay(20);
 
 		/* Config Spin-up */
-		writel(0x600000, sata_mmio + HI_SATA_PORT0_OFF + 0x18);
-		udelay(20);
+		//writel(0x600000, sata_mmio + HI_SATA_PORT0_OFF + 0x18);
+		//udelay(20);
 		writel(0x600002, sata_mmio + HI_SATA_PORT0_OFF + 0x18);
 
 		mdelay(5);//need to wait for sata link up
@@ -207,7 +207,6 @@ static int histb_combphy_init(struct phy *phy)
 		nano_register_write(priv, 0xc, 0x9);
 		nano_register_write(priv, 0x1a, 0x4);
 	}
-
 	return 0;
 }
 
