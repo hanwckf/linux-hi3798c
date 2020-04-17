@@ -58,6 +58,16 @@
 		gpio = <&gpio6 3 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 	};
+
+	vcc_sdio2: regulator-vcc-sdio2 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc-sdio2";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&gpio8 1 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		startup-delay-us = <100000>;
+	};
 };
 
 &ehci {
@@ -97,6 +107,16 @@
 	bus-width = <4>;
 	cap-sd-highspeed;
 	status = "okay";
+};
+
+&sd2 {
+	bus-width = <4>;
+	disable-wp;
+	broken-cd;
+	non-removable;
+	cap-power-off-card;
+	vmmc-supply = <&vcc_sdio2>;
+	status = "disabled";
 };
 
 &uart0 {
@@ -145,6 +165,8 @@
 		&sdio0_p1_pmx0_cfg
 		&sdio0_p2_pmx0_cfg
 		&sdio0_p3_pmx0_cfg
+		&sdio2_p2_pmx0_cfg
+		&sdio2_p3_pmx0_cfg
 	>;
 };
 

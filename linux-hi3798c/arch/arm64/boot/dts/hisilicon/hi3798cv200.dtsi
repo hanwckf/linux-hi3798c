@@ -256,8 +256,10 @@
 				&range 34 3 0
 				&range 37 1 2
 				&range 38 3 2  /* GPIO 6 */
-				&range 41 5 0
-				&range 46 8 0  /* GPIO 7 */
+				&range 41 2 0
+				&range 43 3 2  /* SDIO2 */
+				&range 46 3 2  /* GPIO 7 */
+				&range 49 5 0  /* GPIO 7 */
 				&range 54 8 0  /* GPIO 8, skip 62-63 */
 				&range 64 7 1  /* GPIO 9 */
 				&range 72 6 1  /* GPIO 10, RGMII */
@@ -395,6 +397,18 @@
 			clock-names = "ciu", "biu", "ciu-sample", "ciu-drive";
 			resets = <&crg 0xa0 4>;
 			reset-names = "reset";
+		};
+
+		sd2: mmc@9c40000 {
+			compatible = "snps,dw-mshc";
+			reg = <0x9c40000 0x10000>;
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&crg HISTB_SDIO2_CIU_CLK>,
+				 <&crg HISTB_SDIO2_BIU_CLK>;
+			clock-names = "ciu", "biu";
+			resets = <&crg 0x28c 4>;
+			reset-names = "reset";
+			status = "disabled";
 		};
 
 		gpio0: gpio@8b20000 {

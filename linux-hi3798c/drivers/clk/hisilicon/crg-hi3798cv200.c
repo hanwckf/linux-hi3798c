@@ -54,6 +54,7 @@
 #define HI3798CV200_FIXED_600M		88
 #define HI3798CV200_FIXED_675M		89
 #define HI3798CV200_GPU_MUX		90
+#define HI3798CV200_SDIO2_MUX		91
 
 #define HI3798CV200_CRG_NR_CLKS		128
 
@@ -132,6 +133,9 @@ static struct hisi_mux_clock hi3798cv200_mux_clks[] = {
 	{ HI3798CV200_SDIO0_MUX, "sdio0_mux", sdio_mux_p,
 		ARRAY_SIZE(sdio_mux_p), CLK_SET_RATE_PARENT,
 		0x9c, 8, 2, 0, sdio_mux_table, },
+	{ HI3798CV200_SDIO2_MUX, "sdio2_mux", sdio_mux_p,
+		ARRAY_SIZE(sdio_mux_p), CLK_SET_RATE_PARENT,
+		0x28c, 8, 2, 0, sdio_mux_table, },
 };
 
 static struct hisi_mux_clock hi3798cv200_mux_sw_clks[] = {
@@ -167,7 +171,7 @@ static const struct hisi_gate_clock hi3798cv200_gate_clks[] = {
 		CLK_SET_RATE_PARENT, 0x6C, 16, 0, },
 	{ HISTB_I2C4_CLK, "clk_i2c4", "clk_apb",
 		CLK_SET_RATE_PARENT, 0x6C, 20, 0, },
-	/* SDIO */
+	/* SDIO0*/
 	{ HISTB_SDIO0_BIU_CLK, "clk_sdio0_biu", "200m",
 			CLK_SET_RATE_PARENT, 0x9c, 0, 0, },
 	{ HISTB_SDIO0_CIU_CLK, "clk_sdio0_ciu", "sdio0_mux",
@@ -177,6 +181,11 @@ static const struct hisi_gate_clock hi3798cv200_gate_clks[] = {
 		CLK_SET_RATE_PARENT, 0xa0, 0, 0, },
 	{ HISTB_MMC_CIU_CLK, "clk_mmc_ciu", "mmc_mux",
 		CLK_SET_RATE_PARENT, 0xa0, 1, 0, },
+	/* SDIO2 */
+	{ HISTB_SDIO2_BIU_CLK, "clk_sdio2_biu", "200m",
+			CLK_SET_RATE_PARENT, 0x28c, 0, 0, },
+	{ HISTB_SDIO2_CIU_CLK, "clk_sdio2_ciu", "sdio2_mux",
+		CLK_SET_RATE_PARENT, 0x28c, 1, 0, },
 	/* PCIE*/
 	{ HISTB_PCIE_BUS_CLK, "clk_pcie_bus", "200m",
 		CLK_SET_RATE_PARENT, 0x18c, 0, 0, },

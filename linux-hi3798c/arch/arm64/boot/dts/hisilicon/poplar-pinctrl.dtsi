@@ -131,6 +131,65 @@
 		>;
 	};
 
+	sdio2_p1_pmx0_cfg: sdio2_p1_pmx0_cfg {
+		pinctrl-single,pins = <
+			0x0a4 MUX_M2 /* pwren */
+			0x0c4 MUX_M2 /* cd */
+		>;
+		pinctrl-single,bias-pulldown    = <
+			PINCTRL_PULLDOWN(0, 1, 0, 1)
+		>;
+		pinctrl-single,bias-pullup   = <
+			PINCTRL_PULLUP(0, 1, 0, 1)
+		>;
+		pinctrl-single,slew-rate    = <
+			PINCTRL_SLEW_RATE(1, 1)
+		>;
+		pinctrl-single,drive-strength   = <
+			PINCTRL_DRV_STRENGTH(3, 3)
+		>;
+	};
+
+	sdio2_p2_pmx0_cfg: sdio2_p2_pmx0_cfg {
+		pinctrl-single,pins = <
+			0x0ac MUX_M2
+			0x0b0 MUX_M2
+			0x0b8 MUX_M2
+			0x0bc MUX_M2
+			0x0c0 MUX_M2
+		>;
+		pinctrl-single,bias-pulldown    = <
+			PINCTRL_PULLDOWN(0, 1, 0, 1)
+		>;
+		pinctrl-single,bias-pullup   = <
+			PINCTRL_PULLUP(0, 1, 0, 1)
+		>;
+		pinctrl-single,slew-rate    = <
+			PINCTRL_SLEW_RATE(1, 1)
+		>;
+		pinctrl-single,drive-strength   = <
+			PINCTRL_DRV_STRENGTH(5, 7)
+		>;
+	};
+
+	sdio2_p3_pmx0_cfg: sdio2_p3_pmx0_cfg {
+		pinctrl-single,pins = <
+			0x0b4 MUX_M2
+		>;
+		pinctrl-single,bias-pulldown    = <
+			PINCTRL_PULLDOWN(0, 1, 0, 1)
+		>;
+		pinctrl-single,bias-pullup   = <
+			PINCTRL_PULLUP(0, 1, 0, 1)
+		>;
+		pinctrl-single,slew-rate    = <
+			PINCTRL_SLEW_RATE(1, 1)
+		>;
+		pinctrl-single,drive-strength   = <
+			PINCTRL_DRV_STRENGTH(0xc, 0xf)
+		>;
+	};
+
 	gpu_pmx_cfg: gpu_pmx_cfg {
 		pinctrl-single,pins = <
 			0x038 MUX_M1
@@ -542,8 +601,8 @@
 
 	sdio0_p1_pmx0_cfg: sdio0_p1_pmx0_cfg {
 		pinctrl-single,pins = <
-			0x158 MUX_M1
-			0x178 MUX_M1
+			0x158 MUX_M1 /* pwren */
+			0x178 MUX_M1 /* cd */
 		>;
 		pinctrl-single,bias-pulldown    = <
 			PINCTRL_PULLDOWN(0, 1, 0, 1)
@@ -561,11 +620,11 @@
 
 	sdio0_p2_pmx0_cfg: sdio0_p2_pmx0_cfg {
 		pinctrl-single,pins = <
-			0x160 MUX_M1
-			0x164 MUX_M1
-			0x16c MUX_M1
-			0x170 MUX_M1
-			0x174 MUX_M1
+			0x160 MUX_M1 /* D1 */
+			0x164 MUX_M1 /* D0 */
+			0x16c MUX_M1 /* CMD */
+			0x170 MUX_M1 /* D3 */
+			0x174 MUX_M1 /* D2 */
 		>;
 		pinctrl-single,bias-pulldown    = <
 			PINCTRL_PULLDOWN(0, 1, 0, 1)
@@ -583,7 +642,7 @@
 
 	sdio0_p3_pmx0_cfg: sdio0_p3_pmx0_cfg {
 		pinctrl-single,pins = <
-			0x168 MUX_M1
+			0x168 MUX_M1 /* CLK */
 		>;
 		pinctrl-single,bias-pulldown    = <
 			PINCTRL_PULLDOWN(0, 1, 0, 1)
