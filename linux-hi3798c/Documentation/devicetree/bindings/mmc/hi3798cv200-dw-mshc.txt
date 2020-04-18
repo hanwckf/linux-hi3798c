@@ -22,6 +22,9 @@ Optional Properties:
   two more clocks "ciu-drive" and "ciu-sample" are supported. They are used
   to control the clock phases, "ciu-sample" is required for tuning high-speed modes.
 
+* hisilicon,peripheral-syscon: phandle of syscon used to control peripheral,
+  with two arguments: reg offset and shift value for sdio ldo.
+
 Example:
 
 	/* for Hi3798cv200 */

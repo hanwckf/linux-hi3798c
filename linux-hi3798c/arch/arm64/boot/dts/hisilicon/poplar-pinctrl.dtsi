@@ -46,9 +46,6 @@
 			&rgmii1_p1_pmx_cfg
 			&rgmii1_p2_pmx_cfg
 			&rgmii1_p3_pmx_cfg
-			&sdio0_p1_pmx0_cfg
-			&sdio0_p2_pmx0_cfg
-			&sdio0_p3_pmx0_cfg
 		>;
 
 	emmc_p1_pmx_cfg: emmc_p1_pmx_cfg {
@@ -618,6 +615,7 @@
 		>;
 	};
 
+	/* 3.3v */
 	sdio0_p2_pmx0_cfg: sdio0_p2_pmx0_cfg {
 		pinctrl-single,pins = <
 			0x160 MUX_M1 /* D1 */
@@ -640,6 +638,41 @@
 		>;
 	};
 
+	/* 1.8v except sdr104 */
+	sdio0_p2_pmx1_cfg: sdio0_p2_pmx1_cfg {
+		pinctrl-single,pins = <
+			0x160 MUX_M1
+			0x164 MUX_M1
+			0x16c MUX_M1
+			0x170 MUX_M1
+			0x174 MUX_M1
+		>;
+		pinctrl-single,slew-rate    = <
+			PINCTRL_SLEW_RATE(1, 1)
+		>;
+		pinctrl-single,drive-strength   = <
+			PINCTRL_DRV_STRENGTH(3, 7)
+		>;
+	};
+
+	/* sdr104 */
+	sdio0_p2_pmx2_cfg: sdio0_p2_pmx2_cfg {
+		pinctrl-single,pins = <
+			0x160 MUX_M1
+			0x164 MUX_M1
+			0x16c MUX_M1
+			0x170 MUX_M1
+			0x174 MUX_M1
+		>;
+		pinctrl-single,slew-rate    = <
+			PINCTRL_SLEW_RATE(0, 1)
+		>;
+		pinctrl-single,drive-strength   = <
+			PINCTRL_DRV_STRENGTH(3, 7)
+		>;
+	};
+
+	/* 3.3v */
 	sdio0_p3_pmx0_cfg: sdio0_p3_pmx0_cfg {
 		pinctrl-single,pins = <
 			0x168 MUX_M1 /* CLK */
@@ -655,6 +688,45 @@
 		>;
 		pinctrl-single,drive-strength   = <
 			PINCTRL_DRV_STRENGTH(0xc, 0xf)
+		>;
+	};
+
+	/* sdr50 */
+	sdio0_p3_pmx1_cfg: sdio0_p3_pmx1_cfg {
+		pinctrl-single,pins = <
+			0x168 MUX_M1
+		>;
+		pinctrl-single,slew-rate    = <
+			PINCTRL_SLEW_RATE(1, 1)
+		>;
+		pinctrl-single,drive-strength   = <
+			PINCTRL_DRV_STRENGTH(0x0, 0xf)
+		>;
+	};
+
+	/* sdr104 */
+	sdio0_p3_pmx2_cfg: sdio0_p3_pmx2_cfg {
+		pinctrl-single,pins = <
+			0x168 MUX_M1
+		>;
+		pinctrl-single,slew-rate    = <
+			PINCTRL_SLEW_RATE(0, 1)
+		>;
+		pinctrl-single,drive-strength   = <
+			PINCTRL_DRV_STRENGTH(0x0, 0xf)
+		>;
+	};
+
+	/* ddr50 */
+	sdio0_p3_pmx3_cfg: sdio0_p3_pmx3_cfg {
+		pinctrl-single,pins = <
+			0x168 MUX_M1
+		>;
+		pinctrl-single,slew-rate    = <
+			PINCTRL_SLEW_RATE(1, 1)
+		>;
+		pinctrl-single,drive-strength   = <
+			PINCTRL_DRV_STRENGTH(0xb, 0xf)
 		>;
 	};
 };

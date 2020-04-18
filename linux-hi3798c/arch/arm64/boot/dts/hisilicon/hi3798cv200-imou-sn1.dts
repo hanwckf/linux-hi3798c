@@ -106,6 +106,15 @@
 &sd0 {
 	bus-width = <4>;
 	cap-sd-highspeed;
+	sd-uhs-sdr50;
+	sd-uhs-sdr104;
+	sd-uhs-ddr50;
+	hisilicon,peripheral-syscon = <&perictrl 0x11c 0>;
+	pinctrl-names = "default", "sdr50", "sdr104", "ddr50";
+	pinctrl-0 = <&sdio0_p1_pmx0_cfg &sdio0_p2_pmx0_cfg &sdio0_p3_pmx0_cfg>;
+	pinctrl-1 = <&sdio0_p1_pmx0_cfg &sdio0_p2_pmx1_cfg &sdio0_p3_pmx1_cfg>;
+	pinctrl-2 = <&sdio0_p1_pmx0_cfg &sdio0_p2_pmx2_cfg &sdio0_p3_pmx2_cfg>;
+	pinctrl-3 = <&sdio0_p1_pmx0_cfg &sdio0_p2_pmx1_cfg &sdio0_p3_pmx3_cfg>;
 	status = "okay";
 };
 
@@ -162,9 +171,6 @@
 		&rgmii1_p1_pmx_cfg
 		&rgmii1_p2_pmx_cfg
 		&rgmii1_p3_pmx_cfg
-		&sdio0_p1_pmx0_cfg
-		&sdio0_p2_pmx0_cfg
-		&sdio0_p3_pmx0_cfg
 		&sdio2_p2_pmx0_cfg
 		&sdio2_p3_pmx0_cfg
 	>;

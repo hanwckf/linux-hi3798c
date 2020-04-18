@@ -375,12 +375,14 @@
 		};
 
 		sd0: mmc@9820000 {
-			compatible = "snps,dw-mshc";
+			compatible = "hisilicon,hi3798cv200-dw-mshc";
 			reg = <0x9820000 0x10000>;
 			interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
 			clocks = <&crg HISTB_SDIO0_CIU_CLK>,
-				 <&crg HISTB_SDIO0_BIU_CLK>;
-			clock-names = "ciu", "biu";
+				 <&crg HISTB_SDIO0_BIU_CLK>,
+				 <&crg HISTB_SDIO0_SAMPLE_CLK>,
+				 <&crg HISTB_SDIO0_DRV_CLK>;
+			clock-names = "ciu", "biu", "ciu-sample", "ciu-drive";
 			resets = <&crg 0x9c 4>;
 			reset-names = "reset";
 			status = "disabled";
