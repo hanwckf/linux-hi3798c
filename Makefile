@@ -25,6 +25,7 @@ kernel_version: kernel-config
 	$(MAKE_ARCH) kernelrelease
 
 kernel: kernel-config
+	@echo "Kernel source dir: $(KDIR)"
 	$(MAKE_ARCH) -j$(J) Image dtbs
 
 modules: kernel-config
