@@ -14,22 +14,22 @@
 #objects += aenc
 #objects += base
 
-objects := adec
+#objects := adec
 objects += adsp
 objects += aiao
 objects += base
-objects += gfx2d
+#objects += gfx2d
 objects += gpio
 #objects += gpu
 #objects += hdmi
 objects += hi_dbe
 #objects += hifb
-objects += mce
+#objects += mce
 #objects += pdm
 #objects += pq
-objects += pvr
-objects += sync
-objects += tde
+#objects += pvr
+#objects += sync
+#objects += tde
 #objects += vo
 #objects += vpss
 
