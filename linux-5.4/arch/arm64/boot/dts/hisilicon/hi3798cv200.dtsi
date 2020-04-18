@@ -55,6 +55,12 @@
 		};
 	};
 
+	pmu {
+		compatible = "arm,armv8-pmuv3";
+		interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>,
+			 <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
 	gic: interrupt-controller@f1001000 {
 		compatible = "arm,gic-400";
 		reg = <0x0 0xf1001000 0x0 0x1000>,  /* GICD */
@@ -176,6 +182,7 @@
 		pmx0: pinconf@8a21000 {
 			compatible = "pinconf-single";
 			reg = <0x8a21000 0x180>;
+			#pinctrl-cells = <1>;
 			pinctrl-single,register-width = <32>;
 			pinctrl-single,function-mask = <7>;
 			pinctrl-single,gpio-range = <
@@ -629,6 +636,22 @@
 			status = "disabled";
 		};
 
+		xhci0: xhci@98a0000 {
+			compatible = "hisilicon,hi3798cv200-xhci";
+			reg = <0x98a0000 0x10000>;
+			interrupts = <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&crg HISTB_USB3_BUS_CLK>,
+				 <&crg HISTB_USB3_UTMI_CLK>,
+				 <&crg HISTB_USB3_PIPE_CLK>,
+				 <&crg HISTB_USB3_SUSPEND_CLK>;
+			clock-names = "bus", "utmi", "pipe", "suspend";
+			resets = <&crg 0xb0 12>;
+			reset-names = "soft";
+			phys = <&usb2_phy1_port1>, <&combphy0 PHY_TYPE_USB3>;
+			phy-names = "usb", "combo";
+			status = "disabled";
+		};
+
 		sata: hiahci@9900000 {
 			compatible = "generic-ahci";
 			reg = <0x9900000 0x1000>;
@@ -636,8 +659,8 @@
 			phys = <&combphy1 PHY_TYPE_SATA>;
 			phy-names = "sata-phy";
 			clocks = <&crg HISTB_SATA_TX_CLK>,
-				 <&crg HISTB_SATA_CKO_CLK>
-				 <&crg HISTB_SATA_RX_CLK>
+				 <&crg HISTB_SATA_CKO_CLK>,
+				 <&crg HISTB_SATA_RX_CLK>,
 				 <&crg HISTB_SATA_BUS_CLK>;
 			resets = <&crg 0xa8 8>,
 				 <&crg 0xa8 9>,
