@@ -58,6 +58,12 @@
 #define HISTB_USB3_UTMI_CLK1		48
 #define HISTB_USB3_PIPE_CLK1		49
 #define HISTB_USB3_SUSPEND_CLK1		50
+#define HISTB_SATA_TX_CLK			51
+#define HISTB_SATA_CKO_CLK			52
+#define HISTB_SATA_RX_CLK			53
+#define HISTB_SATA_BUS_CLK			54
+#define HISTB_SDIO2_BIU_CLK			55
+#define HISTB_SDIO2_CIU_CLK			56
 
 /* clocks provided by mcu CRG */
 #define HISTB_MCE_CLK			1
