@@ -8,19 +8,14 @@ addons:
     - u-boot-tools
     - curl
 env:
-- toolchain-7=gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
-- toolchain-8=gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu
+- KDIR=linux-hi3798 KCFG=sn1.config toolchain=gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu toolchain_url=https://releases.linaro.org/components/toolchain/binaries/7.5-2019.12/aarch64-linux-gnu
+- KDIR=linux-5.4 KCFG=sn1-5.4.config toolchain=gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu toolchain_url=https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/8.3-2019.03/binrel
 script:
-- curl -LO https://releases.linaro.org/components/toolchain/binaries/7.5-2019.12/aarch64-linux-gnu/${toolchain-7}.tar.xz
-  && tar xf ${toolchain-7}.tar.xz
-- export PATH=$(pwd)/${toolchain-7}/bin:$PATH && aarch64-linux-gnu-gcc -v
+- curl -LO ${toolchain_url}/${toolchain}.tar.xz
+  && tar xf ${toolchain}.tar.xz
+- export PATH=$(pwd)/${toolchain}/bin:$PATH && aarch64-linux-gnu-gcc -v
 - make all
-- tar -cJf output/linux-4.9.tar.xz -C output Image modules.tar.xz hi3798cv200-imou-sn1.dtb
-- curl -LO https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/8.3-2019.03/binrel/${toolchain-8}.tar.xz
-  && tar xf ${toolchain-8}.tar.xz
-- export PATH=$(pwd)/${toolchain-8}/bin:$PATH && aarch64-linux-gnu-gcc -v
-- make KDIR=linux-5.4 KCFG=sn1-5.4.config all
-- tar -cJf output/linux-5.4.tar.xz -C output Image modules.tar.xz hi3798cv200-imou-sn1.dtb
+- tar -cJf output/${KDIR}.tar.xz -C output Image modules.tar.xz hi3798cv200-imou-sn1.dtb
 - tree -hn output
 deploy:
   provider: releases
@@ -30,7 +25,7 @@ deploy:
   api_key:
     secure: P86hW6lHbbSsZT8yI135OXUcPQpydGUxpjFFj/5p7USyCJUjiCVtq81zdbfrYgrJhjKgVA8Ps1ahQM8YT+1vvZu/WhUEF9fSRtLfwh2MFuVvkwVnwWMMxlJYvvW8KNG54Rv3rPmSHXDHqyuQe7xgqnayqBLIXLOSTic//Zx//OP6Nq/Zf41Hrvh+qSAG2e1adbhLdg/PhnvBRWBpp+2yo/VoZ82jrF5RPR9nAGVhV8/9pDzU0kqgXjLLx7KW/vnbgVB+rflIRys+MTlahO9gHE0OyVwBUwpvxqOSvQ2Dkwv1IUHgrKbiuN1IlDUrRS2fBgs1OmSWX07k0eDXAwZMXWi1EbEqZnRT8h2qhmqgObW0ZRKTcXXqhCOr4I2ibDkQNBvE4C6A/SaHCWzEIxc3mkYSyQw5V3wrcDd0D0O5aFrXQusfr3uN+tPT+CkdvmhgWIIbzf1MEgqRMyLTamqT1cRhKo/ECzdrAjO/sQRsNh523xqLcrLQ354kcPbB18BBaXxJnci5blTDi1uoWYTyIBjoSaFoe4U1nqwTlnaaGq/5D99ZMq4y7XUUnEbgoK4j9+BEoi6vVQZshUDF4jJSFlkPUOvesOn+I1Wpc4P1oEEFOKvHFebE/wfOQgIhgqdULP5LD9w2nv4ZS9jA9pevkturvCp4PIne+28MeFfbbKM=
   file: 
-    - output/linux-4.9.tar.xz
+    - output/linux-hi3798.tar.xz
     - output/linux-5.4.tar.xz
   on:
     repo: hanwckf/linux-hi3798c
