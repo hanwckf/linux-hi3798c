@@ -325,6 +325,18 @@
 			status = "disabled";
 		};
 
+		sd2: mmc@9c40000 {
+			compatible = "snps,dw-mshc";
+			reg = <0x9c40000 0x10000>;
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&crg HISTB_SDIO2_CIU_CLK>,
+				 <&crg HISTB_SDIO2_BIU_CLK>;
+			clock-names = "ciu", "biu";
+			resets = <&crg 0x28c 4>;
+			reset-names = "reset";
+			status = "disabled";
+		};
+
 		gpio0: gpio@8b20000 {
 			compatible = "arm,pl061", "arm,primecell";
 			reg = <0x8b20000 0x1000>;
@@ -614,6 +626,23 @@
 			reset-names = "bus", "phy", "utmi";
 			phys = <&usb2_phy1_port0>;
 			phy-names = "usb";
+			status = "disabled";
+		};
+
+		sata: hiahci@9900000 {
+			compatible = "generic-ahci";
+			reg = <0x9900000 0x1000>;
+			interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&combphy1 PHY_TYPE_SATA>;
+			phy-names = "sata-phy";
+			clocks = <&crg HISTB_SATA_TX_CLK>,
+				 <&crg HISTB_SATA_CKO_CLK>
+				 <&crg HISTB_SATA_RX_CLK>
+				 <&crg HISTB_SATA_BUS_CLK>;
+			resets = <&crg 0xa8 8>,
+				 <&crg 0xa8 9>,
+				 <&crg 0xa8 10>,
+				 <&crg 0xa8 11>;
 			status = "disabled";
 		};
 	};
