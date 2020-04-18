@@ -20,6 +20,7 @@ all: kernel modules
 
 kernel-config:
 	cp -f $(KCFG) $(KDIR)/.config
+	$(MAKE_ARCH) olddefconfig
 
 kernel_version: kernel-config
 	$(MAKE_ARCH) kernelrelease
