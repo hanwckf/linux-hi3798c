@@ -1,5 +1,7 @@
-KDIR := linux-hi3798c
-KCFG := sn1.config
+KDIR ?= linux-hi3798c
+KCFG ?= sn1.config
+CROSS_GCC ?= aarch64-linux-gnu-
+
 DTB := hisilicon/hi3798cv200-imou-sn1.dtb
 KVER = $(shell make -s kernel_version)
 
@@ -7,7 +9,7 @@ CUR_DIR := $(shell pwd)
 STAGE_DIR := $(CUR_DIR)/stage
 OUTPUT_DIR := $(CUR_DIR)/output
 
-MAKE_ARCH := make -C $(KDIR) CROSS_COMPILE=aarch64-linux-gnu- ARCH=arm64
+MAKE_ARCH := make -C $(KDIR) CROSS_COMPILE=$(CROSS_GCC) ARCH=arm64
 J=$(shell grep ^processor /proc/cpuinfo | wc -l)
 
 all: kernel modules
@@ -32,7 +34,7 @@ modules: kernel-config
 	rm -f $(STAGE_DIR)/lib/modules/$(KVER)/build $(STAGE_DIR)/lib/modules/$(KVER)/source
 
 kernel_clean:
-	$(MAKE_ARCH) clean
+	$(MAKE_ARCH) distclean
 
 clean: kernel_clean
 	rm -rf $(STAGE_DIR)
