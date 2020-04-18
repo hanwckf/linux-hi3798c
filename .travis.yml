@@ -6,9 +6,8 @@ addons:
     packages:
     - tree
     - u-boot-tools
-    - curl
 env:
-- KDIR=linux-hi3798 KCFG=sn1.config toolchain=gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu toolchain_url=https://releases.linaro.org/components/toolchain/binaries/7.5-2019.12/aarch64-linux-gnu
+- KDIR=linux-hi3798c KCFG=sn1.config toolchain=gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu toolchain_url=https://releases.linaro.org/components/toolchain/binaries/7.5-2019.12/aarch64-linux-gnu
 - KDIR=linux-5.4 KCFG=sn1-5.4.config toolchain=gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu toolchain_url=https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/8.3-2019.03/binrel
 script:
 - curl -LO ${toolchain_url}/${toolchain}.tar.xz
@@ -17,6 +16,7 @@ script:
 - make all
 - tar -cJf output/${KDIR}.tar.xz -C output Image modules.tar.xz hi3798cv200-imou-sn1.dtb
 - tree -hn output
+- rm -f output/Image output/modules.tar.xz output/hi3798cv200-imou-sn1.dtb
 deploy:
   provider: releases
   skip_cleanup: true
@@ -25,8 +25,7 @@ deploy:
   api_key:
     secure: P86hW6lHbbSsZT8yI135OXUcPQpydGUxpjFFj/5p7USyCJUjiCVtq81zdbfrYgrJhjKgVA8Ps1ahQM8YT+1vvZu/WhUEF9fSRtLfwh2MFuVvkwVnwWMMxlJYvvW8KNG54Rv3rPmSHXDHqyuQe7xgqnayqBLIXLOSTic//Zx//OP6Nq/Zf41Hrvh+qSAG2e1adbhLdg/PhnvBRWBpp+2yo/VoZ82jrF5RPR9nAGVhV8/9pDzU0kqgXjLLx7KW/vnbgVB+rflIRys+MTlahO9gHE0OyVwBUwpvxqOSvQ2Dkwv1IUHgrKbiuN1IlDUrRS2fBgs1OmSWX07k0eDXAwZMXWi1EbEqZnRT8h2qhmqgObW0ZRKTcXXqhCOr4I2ibDkQNBvE4C6A/SaHCWzEIxc3mkYSyQw5V3wrcDd0D0O5aFrXQusfr3uN+tPT+CkdvmhgWIIbzf1MEgqRMyLTamqT1cRhKo/ECzdrAjO/sQRsNh523xqLcrLQ354kcPbB18BBaXxJnci5blTDi1uoWYTyIBjoSaFoe4U1nqwTlnaaGq/5D99ZMq4y7XUUnEbgoK4j9+BEoi6vVQZshUDF4jJSFlkPUOvesOn+I1Wpc4P1oEEFOKvHFebE/wfOQgIhgqdULP5LD9w2nv4ZS9jA9pevkturvCp4PIne+28MeFfbbKM=
   file: 
-    - output/linux-hi3798.tar.xz
-    - output/linux-5.4.tar.xz
+    - output/*.tar.xz
   on:
     repo: hanwckf/linux-hi3798c
     tags: true
