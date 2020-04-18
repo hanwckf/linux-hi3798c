@@ -102,9 +102,45 @@ static int histb_combphy_set_mode(struct histb_combphy_priv *priv)
 				  hw_sel << mode->shift);
 }
 
+#define HI_SATA_PORT0_OFF          0x100
+#define SATA_PORT_PHYCTL1          0x48
+#define SATA_PORT_PHYCTL2          0x4c
+
+static void nano_tx_deemp_sata(void * __iomem sata_mmio, u32 deemp_value)
+{
+	unsigned int val;
+	val = readl(sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL1);
+	val &= ~(1<<8);
+	writel(val, sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL1);
+	udelay(20);
+
+	val = readl(sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL2);
+	val &= ~(0x1ff << 0);
+	val |= (deemp_value << 0);
+	writel(val, sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL2);
+	udelay(20);
+}
+
+static void nano_tx_margin_sata(void * __iomem sata_mmio, u32 margin_value)
+{
+	unsigned int val;
+	val = readl(sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL1);
+	val &= ~(1<<8);
+	writel(val, sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL1);
+	udelay(20);
+
+	val = readl(sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL2);
+	val &= ~(0x1ff << 9);
+	val |= (margin_value << 9);
+	writel(val, sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL2);
+	udelay(20);
+}
+
 static int histb_combphy_init(struct phy *phy)
 {
 	struct histb_combphy_priv *priv = phy_get_drvdata(phy);
+	struct histb_combphy_mode *mode = &priv->mode;
+	void __iomem *sata_mmio = NULL;
 	u32 val;
 	int ret;
 
@@ -123,18 +159,51 @@ static int histb_combphy_init(struct phy *phy)
 
 	reset_control_deassert(priv->por_rst);
 
-	/* Enable EP clock */
-	val = readl(priv->mmio + COMBPHY_CFG_REG);
-	val |= COMBPHY_CLKREF_OUT_OEN;
-	writel(val, priv->mmio + COMBPHY_CFG_REG);
+	if ( mode->select == PHY_TYPE_SATA ) {
+		sata_mmio = ioremap_nocache(0xf9900000, 0x1000);
+		if (IS_ERR(sata_mmio)) {
+			pr_err("SATA mmio ioremap failed!\n");
+			ret = PTR_ERR(sata_mmio);
+			return ret;
+		}
 
-	/* Need to wait for EP clock stable */
-	mdelay(5);
+		pr_info("enable SATA combphy\n");
 
-	/* Configure nano phy registers as suggested by vendor */
-	nano_register_write(priv, 0x1, 0x8);
-	nano_register_write(priv, 0xc, 0x9);
-	nano_register_write(priv, 0x1a, 0x4);
+		nano_register_write(priv, 0x1, 0x4);
+
+		/* Config Nano De-emphasis Gen1&Gen2 0dB,Gen3 -3.5dB */
+		nano_tx_deemp_sata(sata_mmio, 0x52);
+
+		/* Config Nano TxMargin Gen1&Gen2 1000mV,Gen3 1100mV */
+		nano_tx_margin_sata(sata_mmio, 0x40);
+
+		/* Config SATA Port0 phy controller 6Gbps */
+		writel(0xE400000, sata_mmio + HI_SATA_PORT0_OFF + 0x74);
+		udelay(20);
+
+		/* Config Spin-up */
+		//writel(0x600000, sata_mmio + HI_SATA_PORT0_OFF + 0x18);
+		//udelay(20);
+		writel(0x600002, sata_mmio + HI_SATA_PORT0_OFF + 0x18);
+
+		mdelay(5);//need to wait for sata link up
+
+		iounmap(sata_mmio);
+		sata_mmio = NULL;
+	} else {
+		/* Enable EP clock */
+		val = readl(priv->mmio + COMBPHY_CFG_REG);
+		val |= COMBPHY_CLKREF_OUT_OEN;
+		writel(val, priv->mmio + COMBPHY_CFG_REG);
+
+		/* Need to wait for EP clock stable */
+		mdelay(5);
+
+		/* Configure nano phy registers as suggested by vendor */
+		nano_register_write(priv, 0x1, 0x8);
+		nano_register_write(priv, 0xc, 0x9);
+		nano_register_write(priv, 0x1a, 0x4);
+	}
 
 	return 0;
 }
