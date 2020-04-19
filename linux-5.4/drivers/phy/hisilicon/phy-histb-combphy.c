@@ -14,6 +14,7 @@
 #include <linux/mfd/syscon.h>
 #include <linux/module.h>
 #include <linux/of_device.h>
+#include <linux/of_address.h>
 #include <linux/phy/phy.h>
 #include <linux/regmap.h>
 #include <linux/reset.h>
@@ -47,6 +48,7 @@ struct histb_combphy_priv {
 	struct clk *ref_clk;
 	struct phy *phy;
 	struct histb_combphy_mode mode;
+	struct device_node *ahci_np;
 };
 
 static void nano_register_write(struct histb_combphy_priv *priv,
@@ -140,7 +142,7 @@ static int histb_combphy_init(struct phy *phy)
 {
 	struct histb_combphy_priv *priv = phy_get_drvdata(phy);
 	struct histb_combphy_mode *mode = &priv->mode;
-	void __iomem *sata_mmio = NULL;
+	void __iomem *sata_mmio;
 	u32 val;
 	int ret;
 
@@ -159,15 +161,13 @@ static int histb_combphy_init(struct phy *phy)
 
 	reset_control_deassert(priv->por_rst);
 
-	if ( mode->select == PHY_TYPE_SATA ) {
-		sata_mmio = ioremap_nocache(0xf9900000, 0x1000);
+	if (mode->select == PHY_TYPE_SATA && priv->ahci_np) {
+		sata_mmio = of_iomap(priv->ahci_np, 0);
 		if (IS_ERR(sata_mmio)) {
-			pr_err("SATA mmio ioremap failed!\n");
 			ret = PTR_ERR(sata_mmio);
 			return ret;
 		}
-
-		pr_info("enable SATA combphy\n");
+		dev_notice(&phy->dev, "enable SATA combphy\n");
 
 		nano_register_write(priv, 0x1, 0x4);
 
@@ -211,12 +211,15 @@ static int histb_combphy_init(struct phy *phy)
 static int histb_combphy_exit(struct phy *phy)
 {
 	struct histb_combphy_priv *priv = phy_get_drvdata(phy);
+	struct histb_combphy_mode *mode = &priv->mode;
 	u32 val;
 
-	/* Disable EP clock */
-	val = readl(priv->mmio + COMBPHY_CFG_REG);
-	val &= ~COMBPHY_CLKREF_OUT_OEN;
-	writel(val, priv->mmio + COMBPHY_CFG_REG);
+	if (mode->select != PHY_TYPE_SATA) {
+		/* Disable EP clock */
+		val = readl(priv->mmio + COMBPHY_CFG_REG);
+		val &= ~COMBPHY_CLKREF_OUT_OEN;
+		writel(val, priv->mmio + COMBPHY_CFG_REG);
+	}
 
 	reset_control_assert(priv->por_rst);
 	clk_disable_unprepare(priv->ref_clk);
@@ -263,6 +266,7 @@ static int histb_combphy_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct histb_combphy_priv *priv;
 	struct device_node *np = dev->of_node;
+	struct device_node *ahci_np;
 	struct histb_combphy_mode *mode;
 	struct resource *res;
 	u32 vals[3];
@@ -277,6 +281,14 @@ static int histb_combphy_probe(struct platform_device *pdev)
 	if (IS_ERR(priv->mmio)) {
 		ret = PTR_ERR(priv->mmio);
 		return ret;
+	}
+
+	ahci_np = of_parse_phandle(np, "sata-controller", 0);
+	if (!ahci_np) {
+		dev_dbg(dev, "could not find sata-controller node\n");
+		priv->ahci_np = NULL;
+	} else {
+		priv->ahci_np = ahci_np;
 	}
 
 	priv->syscon = syscon_node_to_regmap(np->parent);

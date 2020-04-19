@@ -153,6 +153,7 @@
 };
 
 &combphy1 {
+	sata-controller = <&sata>;
 	assigned-clocks = <&crg 80>;
 	assigned-clock-parents = <&crg 66>;
 	assigned-clock-rates = <25000000>;
