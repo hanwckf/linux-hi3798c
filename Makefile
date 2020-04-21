@@ -9,7 +9,12 @@ CUR_DIR := $(shell pwd)
 STAGE_DIR := $(CUR_DIR)/stage
 OUTPUT_DIR := $(CUR_DIR)/output
 
-MAKE_ARCH := make -C $(KDIR) CROSS_COMPILE=$(CROSS_GCC) ARCH=arm64
+GIT_VER = $(shell git rev-parse --short=7 HEAD 2>/dev/null)
+ifneq ($(GIT_VER),)
+LOCALVERSION="-$(GIT_VER)"
+endif
+
+MAKE_ARCH = make -C $(KDIR) CROSS_COMPILE=$(CROSS_GCC) ARCH=arm64 LOCALVERSION=$(LOCALVERSION)
 J=$(shell grep ^processor /proc/cpuinfo | wc -l)
 
 all: kernel modules
