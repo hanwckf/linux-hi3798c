@@ -23,18 +23,18 @@ all: kernel modules
 	cp -f $(KDIR)/arch/arm64/boot/dts/$(DTB) $(OUTPUT_DIR)
 	tar --owner=root --group=root -cJf $(OUTPUT_DIR)/modules.tar.xz -C $(STAGE_DIR) lib
 
-kernel-config:
+$(KDIR)/.config: $(KCFG)
 	cp -f $(KCFG) $(KDIR)/.config
 	$(MAKE_ARCH) olddefconfig
 
-kernel_version: kernel-config
+kernel_version: $(KDIR)/.config
 	$(MAKE_ARCH) kernelrelease
 
-kernel: kernel-config
+kernel: $(KDIR)/.config
 	@echo "Kernel source dir: $(KDIR)"
 	$(MAKE_ARCH) -j$(J) Image dtbs
 
-modules: kernel-config
+modules: $(KDIR)/.config
 	rm -rf $(STAGE_DIR)
 	$(MAKE_ARCH) -j$(J) modules
 	$(MAKE_ARCH) INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=$(STAGE_DIR) modules_install
