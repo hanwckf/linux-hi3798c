@@ -31,6 +31,7 @@
 			label = "sata-white";
 			gpios = <&gpio3 0 GPIO_ACTIVE_LOW>;
 			default-state = "off";
+			linux,default-trigger = "disk-activity";
 		};
 
 		sata-red {
