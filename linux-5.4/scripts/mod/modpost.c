@@ -312,6 +312,18 @@ static const char *sec_name(struct elf_info *elf, int secindex)
 	return sech_name(elf, &elf->sechdrs[secindex]);
 }
 
+static void *sym_get_data(const struct elf_info *info, const Elf_Sym *sym)
+{
+	Elf_Shdr *sechdr = &info->sechdrs[sym->st_shndx];
+	unsigned long offset;
+
+	offset = sym->st_value;
+	if (info->hdr->e_type != ET_REL)
+		offset -= sechdr->sh_addr;
+
+	return (void *)info->hdr + sechdr->sh_offset + offset;
+}
+
 #define strstarts(str, prefix) (strncmp(str, prefix, strlen(prefix)) == 0)
 
 static enum export export_from_secname(struct elf_info *elf, unsigned int sec)
@@ -348,10 +360,10 @@ static enum export export_from_sec(struct elf_info *elf, unsigned int sec)
 		return export_unknown;
 }
 
-static const char *namespace_from_kstrtabns(struct elf_info *info,
-					    Elf_Sym *kstrtabns)
+static const char *namespace_from_kstrtabns(const struct elf_info *info,
+					    const Elf_Sym *sym)
 {
-	char *value = info->ksymtab_strings + kstrtabns->st_value;
+	const char *value = sym_get_data(info, sym);
 	return value[0] ? value : NULL;
 }
 
@@ -593,10 +605,6 @@ static int parse_elf(struct elf_info *info, const char *filename)
 			info->export_unused_gpl_sec = i;
 		else if (strcmp(secname, "__ksymtab_gpl_future") == 0)
 			info->export_gpl_future_sec = i;
-		else if (strcmp(secname, "__ksymtab_strings") == 0)
-			info->ksymtab_strings = (void *)hdr +
-						sechdrs[i].sh_offset -
-						sechdrs[i].sh_addr;
 
 		if (sechdrs[i].sh_type == SHT_SYMTAB) {
 			unsigned int sh_link_idx;
@@ -701,10 +709,7 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
 			unsigned int *crcp;
 
 			/* symbol points to the CRC in the ELF object */
-			crcp = (void *)info->hdr + sym->st_value +
-			       info->sechdrs[sym->st_shndx].sh_offset -
-			       (info->hdr->e_type != ET_REL ?
-				info->sechdrs[sym->st_shndx].sh_addr : 0);
+			crcp = sym_get_data(info, sym);
 			crc = TO_NATIVE(*crcp);
 		}
 		sym_update_crc(symname + strlen("__crc_"), mod, crc,
@@ -2051,7 +2056,9 @@ static void read_symbols(const char *modname)
 		symname = remove_dot(info.strtab + sym->st_name);
 
 		handle_modversions(mod, &info, sym, symname);
+#ifndef CONFIG_MODULE_STRIPPED
 		handle_moddevtable(mod, &info, sym, symname);
+#endif
 	}
 
 	/* Apply symbol namespaces from __kstrtabns_<symbol> entries. */
@@ -2265,8 +2272,10 @@ static void add_header(struct buffer *b, struct module *mod)
 	buf_printf(b, "\n");
 	buf_printf(b, "BUILD_SALT;\n");
 	buf_printf(b, "\n");
+#ifndef CONFIG_MODULE_STRIPPED
 	buf_printf(b, "MODULE_INFO(vermagic, VERMAGIC_STRING);\n");
 	buf_printf(b, "MODULE_INFO(name, KBUILD_MODNAME);\n");
+#endif
 	buf_printf(b, "\n");
 	buf_printf(b, "__visible struct module __this_module\n");
 	buf_printf(b, "__section(.gnu.linkonce.this_module) = {\n");
@@ -2283,8 +2292,10 @@ static void add_header(struct buffer *b, struct module *mod)
 
 static void add_intree_flag(struct buffer *b, int is_intree)
 {
+#ifndef CONFIG_MODULE_STRIPPED
 	if (is_intree)
 		buf_printf(b, "\nMODULE_INFO(intree, \"Y\");\n");
+#endif
 }
 
 /* Cannot check for assembler */
@@ -2297,8 +2308,10 @@ static void add_retpoline(struct buffer *b)
 
 static void add_staging_flag(struct buffer *b, const char *name)
 {
+#ifndef CONFIG_MODULE_STRIPPED
 	if (strstarts(name, "drivers/staging"))
 		buf_printf(b, "\nMODULE_INFO(staging, \"Y\");\n");
+#endif
 }
 
 /**
@@ -2382,11 +2395,13 @@ static void add_depends(struct buffer *b, struct module *mod)
 
 static void add_srcversion(struct buffer *b, struct module *mod)
 {
+#ifndef CONFIG_MODULE_STRIPPED
 	if (mod->srcversion[0]) {
 		buf_printf(b, "\n");
 		buf_printf(b, "MODULE_INFO(srcversion, \"%s\");\n",
 			   mod->srcversion);
 	}
+#endif
 }
 
 static void write_if_changed(struct buffer *b, const char *fname)
@@ -2656,7 +2671,9 @@ int main(int argc, char **argv)
 		add_staging_flag(&buf, mod->name);
 		err |= add_versions(&buf, mod);
 		add_depends(&buf, mod);
+#ifndef CONFIG_MODULE_STRIPPED
 		add_moddevtable(&buf, mod);
+#endif
 		add_srcversion(&buf, mod);
 
 		sprintf(fname, "%s.mod.c", mod->name);

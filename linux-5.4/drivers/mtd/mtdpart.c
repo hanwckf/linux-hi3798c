@@ -524,7 +524,7 @@ static struct mtd_part *allocate_partition(struct mtd_info *parent,
 			part->name);
 	}
 
-	tmp = part_absolute_offset(parent) + slave->mtd.size;
+	tmp = part_absolute_offset(parent) + slave->offset + slave->mtd.size;
 	remainder = do_div(tmp, wr_alignment);
 	if ((slave->mtd.flags & MTD_WRITEABLE) && remainder) {
 		slave->mtd.flags &= ~MTD_WRITEABLE;

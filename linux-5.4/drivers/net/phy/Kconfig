@@ -329,6 +329,12 @@ config BROADCOM_PHY
 	  Currently supports the BCM5411, BCM5421, BCM5461, BCM54616S, BCM5464,
 	  BCM5481, BCM54810 and BCM5482 PHYs.
 
+config BCM84881_PHY
+	tristate "Broadcom BCM84881 PHY"
+	depends on PHYLIB
+	---help---
+	  Support the Broadcom BCM84881 PHY.
+
 config CICADA_PHY
 	tristate "Cicada PHYs"
 	---help---

@@ -23,6 +23,7 @@
 #include <linux/ethtool.h>
 #include <linux/phy.h>
 #include <linux/phy_led_triggers.h>
+#include <linux/sfp.h>
 #include <linux/workqueue.h>
 #include <linux/mdio.h>
 #include <linux/io.h>
@@ -842,6 +843,9 @@ void phy_stop(struct phy_device *phydev)
 
 	mutex_lock(&phydev->lock);
 
+	if (phydev->sfp_bus)
+		sfp_upstream_stop(phydev->sfp_bus);
+
 	phydev->state = PHY_HALTED;
 
 	mutex_unlock(&phydev->lock);
@@ -903,6 +907,9 @@ void phy_state_machine(struct work_struct *work)
 	mutex_lock(&phydev->lock);
 
 	old_state = phydev->state;
+
+	if (phydev->sfp_bus)
+		sfp_upstream_start(phydev->sfp_bus);
 
 	switch (phydev->state) {
 	case PHY_DOWN:

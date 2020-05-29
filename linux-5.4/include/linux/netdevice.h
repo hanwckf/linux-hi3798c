@@ -138,8 +138,8 @@ static inline bool dev_xmit_complete(int rc)
 
 #if defined(CONFIG_HYPERV_NET)
 # define LL_MAX_HEADER 128
-#elif defined(CONFIG_WLAN) || IS_ENABLED(CONFIG_AX25)
-# if defined(CONFIG_MAC80211_MESH)
+#elif defined(CONFIG_WLAN) || IS_ENABLED(CONFIG_AX25) || 1
+# if defined(CONFIG_MAC80211_MESH) || 1
 #  define LL_MAX_HEADER 128
 # else
 #  define LL_MAX_HEADER 96
@@ -928,6 +928,14 @@ struct devlink;
 struct tlsdev_ops;
 
 
+struct flow_offload;
+struct flow_offload_hw_path;
+
+enum flow_offload_type {
+	FLOW_OFFLOAD_ADD	= 0,
+	FLOW_OFFLOAD_DEL,
+};
+
 /*
  * This structure defines the management hooks for network devices.
  * The following hooks can be defined; unless noted otherwise, they are
@@ -1159,6 +1167,17 @@ struct tlsdev_ops;
  *			     int nlflags)
  * int (*ndo_bridge_dellink)(struct net_device *dev, struct nlmsghdr *nlh,
  *			     u16 flags);
+ *
+ * int (*ndo_flow_offload_check)(struct flow_offload_hw_path *path);
+ *	For virtual devices like bridges, vlan, and pppoe, fill in the
+ *	underlying network device that can be used for offloading connections.
+ *	Return an error if offloading is not supported.
+ *
+ * int (*ndo_flow_offload)(enum flow_offload_type type,
+ *			   struct flow_offload *flow,
+ *			   struct flow_offload_hw_path *src,
+ *			   struct flow_offload_hw_path *dest);
+ *	Adds/deletes flow entry to/from net device flowtable.
  *
  * int (*ndo_change_carrier)(struct net_device *dev, bool new_carrier);
  *	Called to change device carrier. Soft-devices (like dummy, team, etc)
@@ -1407,6 +1426,11 @@ struct net_device_ops {
 	int			(*ndo_bridge_dellink)(struct net_device *dev,
 						      struct nlmsghdr *nlh,
 						      u16 flags);
+	int			(*ndo_flow_offload_check)(struct flow_offload_hw_path *path);
+	int			(*ndo_flow_offload)(enum flow_offload_type type,
+						    struct flow_offload *flow,
+						    struct flow_offload_hw_path *src,
+						    struct flow_offload_hw_path *dest);
 	int			(*ndo_change_carrier)(struct net_device *dev,
 						      bool new_carrier);
 	int			(*ndo_get_phys_port_id)(struct net_device *dev,
@@ -1522,6 +1546,7 @@ enum netdev_priv_flags {
 	IFF_FAILOVER_SLAVE		= 1<<28,
 	IFF_L3MDEV_RX_HANDLER		= 1<<29,
 	IFF_LIVE_RENAME_OK		= 1<<30,
+	IFF_NO_IP_ALIGN			= 1<<31,
 };
 
 #define IFF_802_1Q_VLAN			IFF_802_1Q_VLAN
@@ -1554,6 +1579,7 @@ enum netdev_priv_flags {
 #define IFF_FAILOVER_SLAVE		IFF_FAILOVER_SLAVE
 #define IFF_L3MDEV_RX_HANDLER		IFF_L3MDEV_RX_HANDLER
 #define IFF_LIVE_RENAME_OK		IFF_LIVE_RENAME_OK
+#define IFF_NO_IP_ALIGN			IFF_NO_IP_ALIGN
 
 /**
  *	struct net_device - The DEVICE structure.
@@ -1855,6 +1881,11 @@ struct net_device {
 	const struct tlsdev_ops *tlsdev_ops;
 #endif
 
+#ifdef CONFIG_ETHERNET_PACKET_MANGLE
+	void (*eth_mangle_rx)(struct net_device *dev, struct sk_buff *skb);
+	struct sk_buff *(*eth_mangle_tx)(struct net_device *dev, struct sk_buff *skb);
+#endif
+
 	const struct header_ops *header_ops;
 
 	unsigned int		flags;
@@ -1900,6 +1931,8 @@ struct net_device {
 	struct netdev_hw_addr_list	mc;
 	struct netdev_hw_addr_list	dev_addrs;
 
+	unsigned char		local_addr_mask[MAX_ADDR_LEN];
+
 #ifdef CONFIG_SYSFS
 	struct kset		*queues_kset;
 #endif
@@ -1933,6 +1966,10 @@ struct net_device {
 	struct wpan_dev		*ieee802154_ptr;
 #if IS_ENABLED(CONFIG_MPLS_ROUTING)
 	struct mpls_dev __rcu	*mpls_ptr;
+#endif
+
+#ifdef CONFIG_ETHERNET_PACKET_MANGLE
+	void			*phy_ptr; /* PHY device specific data */
 #endif
 
 /*

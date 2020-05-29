@@ -45,6 +45,7 @@ Hardware Monitoring Kernel Drivers
    da9052
    da9055
    dme1737
+   drivetemp
    ds1621
    ds620
    emc1403

@@ -203,6 +203,8 @@ static inline const char *phy_modes(phy_interface_t interface)
 
 struct device;
 struct phylink;
+struct sfp_bus;
+struct sfp_upstream_ops;
 struct sk_buff;
 
 /*
@@ -343,6 +345,8 @@ struct phy_c45_device_ids {
  * dev_flags: Device-specific flags used by the PHY driver.
  * irq: IRQ number of the PHY's interrupt (-1 if none)
  * phy_timer: The timer for handling the state machine
+ * sfp_bus_attached: flag indicating whether the SFP bus has been attached
+ * sfp_bus: SFP bus attached to this PHY's fiber port
  * attached_dev: The attached enet driver's device instance ptr
  * adjust_link: Callback for the enet controller to respond to
  * changes in the link state.
@@ -434,6 +438,9 @@ struct phy_device {
 
 	struct mutex lock;
 
+	/* This may be modified under the rtnl lock */
+	bool sfp_bus_attached;
+	struct sfp_bus *sfp_bus;
 	struct phylink *phylink;
 	struct net_device *attached_dev;
 
@@ -517,6 +524,12 @@ struct phy_driver {
 	/* Determines the negotiated speed and duplex */
 	int (*read_status)(struct phy_device *phydev);
 
+	/* 
+	 * Update the value in phydev->link to reflect the 
+	 * current link value
+	 */
+	int (*update_link)(struct phy_device *phydev);
+
 	/* Clears any pending interrupts */
 	int (*ack_interrupt)(struct phy_device *phydev);
 
@@ -532,6 +545,12 @@ struct phy_driver {
 
 	/* Override default interrupt handling */
 	int (*handle_interrupt)(struct phy_device *phydev);
+
+	/*
+	 * Called before an ethernet device is detached
+	 * from the PHY.
+	 */
+	void (*detach)(struct phy_device *phydev);
 
 	/* Clears up any memory if needed */
 	void (*remove)(struct phy_device *phydev);
@@ -1023,6 +1042,10 @@ int phy_suspend(struct phy_device *phydev);
 int phy_resume(struct phy_device *phydev);
 int __phy_resume(struct phy_device *phydev);
 int phy_loopback(struct phy_device *phydev, bool enable);
+void phy_sfp_attach(void *upstream, struct sfp_bus *bus);
+void phy_sfp_detach(void *upstream, struct sfp_bus *bus);
+int phy_sfp_probe(struct phy_device *phydev,
+	          const struct sfp_upstream_ops *ops);
 struct phy_device *phy_attach(struct net_device *dev, const char *bus_id,
 			      phy_interface_t interface);
 struct phy_device *phy_find_first(struct mii_bus *bus);
@@ -1108,6 +1131,10 @@ int genphy_read_mmd_unsupported(struct phy_device *phdev, int devad,
 				u16 regnum);
 int genphy_write_mmd_unsupported(struct phy_device *phdev, int devnum,
 				 u16 regnum, u16 val);
+
+/* Clause 37 */
+int genphy_c37_config_aneg(struct phy_device *phydev);
+int genphy_c37_read_status(struct phy_device *phydev);
 
 /* Clause 45 PHY */
 int genphy_c45_restart_aneg(struct phy_device *phydev);

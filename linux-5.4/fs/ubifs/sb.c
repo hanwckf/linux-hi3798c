@@ -175,7 +175,9 @@ static int create_default_filesystem(struct ubifs_info *c)
 	tmp64 = (long long)max_buds * c->leb_size;
 	if (big_lpt)
 		sup_flags |= UBIFS_FLG_BIGLPT;
+#ifndef CONFIG_UBIFS_FS_FORMAT4
 	sup_flags |= UBIFS_FLG_DOUBLE_HASH;
+#endif
 
 	if (ubifs_authenticated(c)) {
 		sup_flags |= UBIFS_FLG_AUTHENTICATION;
@@ -201,7 +203,11 @@ static int create_default_filesystem(struct ubifs_info *c)
 	sup->jhead_cnt     = cpu_to_le32(DEFAULT_JHEADS_CNT);
 	sup->fanout        = cpu_to_le32(DEFAULT_FANOUT);
 	sup->lsave_cnt     = cpu_to_le32(c->lsave_cnt);
+#ifdef CONFIG_UBIFS_FS_FORMAT4
+	sup->fmt_version   = cpu_to_le32(4);
+#else
 	sup->fmt_version   = cpu_to_le32(UBIFS_FORMAT_VERSION);
+#endif
 	sup->time_gran     = cpu_to_le32(DEFAULT_TIME_GRAN);
 	if (c->mount_opts.override_compr)
 		sup->default_compr = cpu_to_le16(c->mount_opts.compr_type);

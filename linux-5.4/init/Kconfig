@@ -1277,6 +1277,17 @@ config SYSCTL_ARCH_UNALIGN_ALLOW
 	  the unaligned access emulation.
 	  see arch/parisc/kernel/unaligned.c for reference
 
+config KALLSYMS_UNCOMPRESSED
+	bool "Keep kallsyms uncompressed"
+	depends on KALLSYMS
+	help
+		Normally kallsyms contains compressed symbols (using a token table),
+		reducing the uncompressed kernel image size. Keeping the symbol table
+		uncompressed significantly improves the size of this part in compressed
+		kernel images.
+
+		Say N unless you need compressed kernel images to be small.
+
 config HAVE_PCSPKR_PLATFORM
 	bool
 
@@ -1650,6 +1661,15 @@ config EMBEDDED
 	  This option should be enabled if compiling the kernel for
 	  an embedded system so certain expert options are available
 	  for configuration.
+
+config MANGLE_BOOTARGS
+	bool "Rename offending bootargs"
+	depends on EXPERT
+	help
+	  Sometimes the bootloader passed bogus root= and rootfstype=
+	  parameters to the kernel, and while you want to ignore them,
+	  you need to know the values f.e. to support dual firmware
+	  layouts on the flash.
 
 config HAVE_PERF_EVENTS
 	bool
@@ -2174,6 +2194,13 @@ config TRIM_UNUSED_KSYMS
 	  binary size.  This might have some security advantages as well.
 
 	  If unsure, or if you need to build out-of-tree modules, say N.
+
+config MODULE_STRIPPED
+	bool "Reduce module size"
+	depends on MODULES
+	help
+	  Remove module parameter descriptions, author info, version, aliases,
+	  device tables, etc.
 
 endif # MODULES
 

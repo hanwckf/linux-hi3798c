@@ -8,7 +8,11 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#if !(defined(__APPLE__) || defined(__CYGWIN__))
 #include <elf.h>
+#else
+#include "elf.h"
+#endif
 
 #include "elfconfig.h"
 
@@ -143,7 +147,6 @@ struct elf_info {
 	Elf_Section  export_gpl_sec;
 	Elf_Section  export_unused_gpl_sec;
 	Elf_Section  export_gpl_future_sec;
-	char	     *ksymtab_strings;
 	char         *strtab;
 	char	     *modinfo;
 	unsigned int modinfo_len;
