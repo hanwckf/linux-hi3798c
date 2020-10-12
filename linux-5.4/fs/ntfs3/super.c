@@ -25,6 +25,7 @@
 #include <linux/parser.h>
 #include <linux/seq_file.h>
 #include <linux/statfs.h>
+#include <linux/version.h>
 
 #include "debug.h"
 #include "ntfs.h"
@@ -1157,8 +1158,10 @@ static int ntfs_fill_super(struct super_block *sb, void *data, int silent)
 		goto out;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 	page_cache_readahead_unbounded(inode->i_mapping, NULL, 0,
 				       0x10000 * sizeof(short) / PAGE_SIZE, 0);
+#endif
 
 	sbi->upcase = upcase = ntfs_alloc(0x10000 * sizeof(short), 0);
 	if (!upcase) {

@@ -803,6 +803,7 @@ out:
 	return err;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 static void ntfs_readahead(struct readahead_control *rac)
 {
 	struct address_space *mapping = rac->mapping;
@@ -824,6 +825,21 @@ static void ntfs_readahead(struct readahead_control *rac)
 
 	mpage_readahead(rac, ntfs_get_block);
 }
+#else
+static int ntfs_readpages(struct file *file, struct address_space *mapping,
+		struct list_head *pages, unsigned int nr_pages)
+{
+	struct inode *inode = mapping->host;
+	struct ntfs_inode *ni = ntfs_i(inode);
+
+	if (ni_has_resident_data(ni))
+		return 0;
+
+	WARN_ON(is_compressed(ni));
+
+	return mpage_readpages(mapping, pages, nr_pages, ntfs_get_block);
+}
+#endif
 
 /*ntfs_direct_IO*/
 static int ntfs_get_block_direct_IO_R(struct inode *inode, sector_t iblock,
@@ -2051,7 +2067,11 @@ const struct inode_operations ntfs_link_inode_operations = {
 };
 
 const struct address_space_operations ntfs_aops = { .readpage = ntfs_readpage,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 						    .readahead = ntfs_readahead,
+#else
+						    .readpages = ntfs_readpages,
+#endif
 						    .writepage = ntfs_writepage,
 						    .writepages =
 							    ntfs_writepages,

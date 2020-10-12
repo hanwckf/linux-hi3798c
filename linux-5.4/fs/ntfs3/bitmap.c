@@ -11,6 +11,7 @@
 #include <linux/fs.h>
 #include <linux/nls.h>
 #include <linux/sched/signal.h>
+#include <linux/version.h>
 
 #include "debug.h"
 #include "ntfs.h"
@@ -518,11 +519,13 @@ static int wnd_rescan(wnd_bitmap *wnd)
 	u64 lbo, len = 0;
 	u32 blocksize = sb->s_blocksize;
 	u8 cluster_bits = sbi->cluster_bits;
+	u32 wbits = 8 * sb->s_blocksize;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 	const u32 ra_bytes = 512 * 1024;
 	const u32 ra_pages = ra_bytes >> PAGE_SHIFT;
-	u32 wbits = 8 * sb->s_blocksize;
 	u32 ra_mask = (ra_bytes >> sb->s_blocksize_bits) - 1;
 	struct address_space *mapping = sb->s_bdev->bd_inode->i_mapping;
+#endif
 	u32 used, frb;
 	const ulong *buf;
 	size_t wpos, wbit, iw, vbo;
@@ -574,9 +577,11 @@ start_wnd:
 	len = (u64)clen << cluster_bits;
 
 read_wnd:
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 	if (!(iw & ra_mask))
 		page_cache_readahead_unbounded(mapping, NULL, lbo >> PAGE_SHIFT,
 					       ra_pages, 0);
+#endif
 
 	bh = ntfs_bread(sb, lbo >> sb->s_blocksize_bits);
 	if (!bh) {
