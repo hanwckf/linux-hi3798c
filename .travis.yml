@@ -8,7 +8,6 @@ addons:
     - u-boot-tools
 env:
 - KDIR=linux-5.4 KCFG=sn1-5.4.config toolchain=gcc-arm-8.3-2019.03-x86_64-aarch64-linux-gnu toolchain_url=https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/8.3-2019.03/binrel
-- KDIR=linux-hi3798c KCFG=sn1.config toolchain=gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu toolchain_url=https://releases.linaro.org/components/toolchain/binaries/7.5-2019.12/aarch64-linux-gnu
 script:
 - curl -LO ${toolchain_url}/${toolchain}.tar.xz
   && tar xf ${toolchain}.tar.xz
