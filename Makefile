@@ -15,7 +15,7 @@ LOCALVERSION="-$(GIT_VER)"
 endif
 
 MAKE_ARCH = make -C $(KDIR) CROSS_COMPILE=$(CROSS_GCC) ARCH=arm64 LOCALVERSION=$(LOCALVERSION)
-J=$(shell grep ^processor /proc/cpuinfo | wc -l)
+J=$(shell nproc)
 
 all: kernel modules
 	mkdir -p $(OUTPUT_DIR)
