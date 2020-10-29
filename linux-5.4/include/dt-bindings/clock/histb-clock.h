@@ -64,6 +64,8 @@
 #define HISTB_SATA_BUS_CLK			54
 #define HISTB_SDIO2_BIU_CLK			55
 #define HISTB_SDIO2_CIU_CLK			56
+#define HISTB_SDIO2_SAMPLE_CLK		57
+#define HISTB_SDIO2_DRV_CLK			58
 
 /* clocks provided by mcu CRG */
 #define HISTB_MCE_CLK			1

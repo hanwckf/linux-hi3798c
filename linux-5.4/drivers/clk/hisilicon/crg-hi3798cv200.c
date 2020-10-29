@@ -99,6 +99,12 @@ static struct hisi_phase_clock hi3798cv200_phase_clks[] = {
 	{ HISTB_MMC_DRV_CLK, "mmc_drive", "clk_mmc_ciu",
 		CLK_SET_RATE_PARENT, 0xa0, 16, 3, mmc_phase_degrees,
 		mmc_phase_regvals, ARRAY_SIZE(mmc_phase_regvals) },
+	{ HISTB_SDIO2_SAMPLE_CLK, "sdio2_sample", "clk_sdio2_ciu",
+		CLK_SET_RATE_PARENT, 0x28c, 12, 3, mmc_phase_degrees,
+		mmc_phase_regvals, ARRAY_SIZE(mmc_phase_regvals) },
+	{ HISTB_SDIO2_DRV_CLK, "sdio2_drive", "clk_sdio2_ciu",
+		CLK_SET_RATE_PARENT, 0x28c, 16, 3, mmc_phase_degrees,
+		mmc_phase_regvals, ARRAY_SIZE(mmc_phase_regvals) },
 };
 
 static const struct hisi_gate_clock hi3798cv200_gate_clks[] = {
