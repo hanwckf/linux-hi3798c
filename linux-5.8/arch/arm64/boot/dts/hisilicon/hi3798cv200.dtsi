@@ -26,33 +26,42 @@
 		#address-cells = <2>;
 		#size-cells = <0>;
 
-		cpu@0 {
+		cpu0: cpu@0 {
 			compatible = "arm,cortex-a53";
 			device_type = "cpu";
 			reg = <0x0 0x0>;
 			enable-method = "psci";
 		};
 
-		cpu@1 {
+		cpu1: cpu@1 {
 			compatible = "arm,cortex-a53";
 			device_type = "cpu";
 			reg = <0x0 0x1>;
 			enable-method = "psci";
 		};
 
-		cpu@2 {
+		cpu2: cpu@2 {
 			compatible = "arm,cortex-a53";
 			device_type = "cpu";
 			reg = <0x0 0x2>;
 			enable-method = "psci";
 		};
 
-		cpu@3 {
+		cpu3: cpu@3 {
 			compatible = "arm,cortex-a53";
 			device_type = "cpu";
 			reg = <0x0 0x3>;
 			enable-method = "psci";
 		};
+	};
+
+	pmu {
+		compatible = "arm,armv8-pmuv3";
+		interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>,
+			 <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>,
+			 <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>,
+			 <GIC_SPI 11 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&cpu0>, <&cpu1>, <&cpu2>, <&cpu3>;
 	};
 
 	gic: interrupt-controller@f1001000 {
@@ -176,6 +185,7 @@
 		pmx0: pinconf@8a21000 {
 			compatible = "pinconf-single";
 			reg = <0x8a21000 0x180>;
+			#pinctrl-cells = <1>;
 			pinctrl-single,register-width = <32>;
 			pinctrl-single,function-mask = <7>;
 			pinctrl-single,gpio-range = <
@@ -325,6 +335,20 @@
 			status = "disabled";
 		};
 
+		sd2: mmc@9c40000 {
+			compatible = "hisilicon,hi3798cv200-dw-mshc";
+			reg = <0x9c40000 0x10000>;
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&crg HISTB_SDIO2_CIU_CLK>,
+				 <&crg HISTB_SDIO2_BIU_CLK>,
+				 <&crg HISTB_SDIO2_SAMPLE_CLK>,
+				 <&crg HISTB_SDIO2_DRV_CLK>;
+			clock-names = "ciu", "biu", "ciu-sample", "ciu-drive";
+			resets = <&crg 0x28c 4>;
+			reset-names = "reset";
+			status = "disabled";
+		};
+
 		gpio0: gpio@8b20000 {
 			compatible = "arm,pl061", "arm,primecell";
 			reg = <0x8b20000 0x1000>;
@@ -427,7 +451,7 @@
 			#gpio-cells = <2>;
 			interrupt-controller;
 			#interrupt-cells = <2>;
-			gpio-ranges = <&pmx0 0 38 3 &pmx0 0 41 5>;
+			gpio-ranges = <&pmx0 0 38 3 &pmx0 3 41 5>;
 			clocks = <&crg HISTB_APB_CLK>;
 			clock-names = "apb_pclk";
 			status = "disabled";
@@ -469,7 +493,7 @@
 			#gpio-cells = <2>;
 			interrupt-controller;
 			#interrupt-cells = <2>;
-			gpio-ranges = <&pmx0 0 64 7 &pmx0 71 1>;
+			gpio-ranges = <&pmx0 0 64 6 &pmx0 6 62 2>;
 			clocks = <&crg HISTB_APB_CLK>;
 			clock-names = "apb_pclk";
 			status = "disabled";
@@ -614,6 +638,39 @@
 			reset-names = "bus", "phy", "utmi";
 			phys = <&usb2_phy1_port0>;
 			phy-names = "usb";
+			status = "disabled";
+		};
+
+		xhci0: xhci@98a0000 {
+			compatible = "hisilicon,hi3798cv200-xhci";
+			reg = <0x98a0000 0x10000>;
+			interrupts = <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&crg HISTB_USB3_BUS_CLK>,
+				 <&crg HISTB_USB3_UTMI_CLK>,
+				 <&crg HISTB_USB3_PIPE_CLK>,
+				 <&crg HISTB_USB3_SUSPEND_CLK>;
+			clock-names = "bus", "utmi", "pipe", "suspend";
+			resets = <&crg 0xb0 12>;
+			reset-names = "soft";
+			phys = <&usb2_phy1_port1>, <&combphy0 PHY_TYPE_USB3>;
+			phy-names = "usb", "combo";
+			status = "disabled";
+		};
+
+		sata: hiahci@9900000 {
+			compatible = "generic-ahci";
+			reg = <0x9900000 0x1000>;
+			interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&combphy1 PHY_TYPE_SATA>;
+			phy-names = "sata-phy";
+			clocks = <&crg HISTB_SATA_TX_CLK>,
+				 <&crg HISTB_SATA_CKO_CLK>,
+				 <&crg HISTB_SATA_RX_CLK>,
+				 <&crg HISTB_SATA_BUS_CLK>;
+			resets = <&crg 0xa8 8>,
+				 <&crg 0xa8 9>,
+				 <&crg 0xa8 10>,
+				 <&crg 0xa8 11>;
 			status = "disabled";
 		};
 	};
