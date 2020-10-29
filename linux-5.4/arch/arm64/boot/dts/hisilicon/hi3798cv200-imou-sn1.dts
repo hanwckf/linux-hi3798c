@@ -124,6 +124,7 @@
 	broken-cd;
 	non-removable;
 	cap-power-off-card;
+	cap-sd-highspeed;
 	vmmc-supply = <&vcc_sdio2>;
 	status = "disabled";
 };
