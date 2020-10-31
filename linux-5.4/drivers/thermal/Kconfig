@@ -221,6 +221,16 @@ config HISI_THERMAL
 	  thermal framework. cpufreq is used as the cooling device to throttle
 	  CPUs when the passive trip is crossed.
 
+config HI3798C_THERMAL
+	tristate "Hisilicon hi3798c thermal driver"
+	depends on ARCH_HISI || COMPILE_TEST
+	depends on HAS_IOMEM
+	depends on OF
+	default y
+	help
+	  Enable this to plug hisilicon hi3798c thermal sensor driver into 
+	  the Linux thermal framework.
+
 config IMX_THERMAL
 	tristate "Temperature sensor driver for Freescale i.MX SoCs"
 	depends on ARCH_MXC || COMPILE_TEST
