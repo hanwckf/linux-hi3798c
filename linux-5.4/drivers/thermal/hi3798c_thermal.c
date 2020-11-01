@@ -6,24 +6,15 @@
 #include <linux/thermal.h>
 #include <linux/delay.h>
 
-#define FRAC_BITS	10
-#define int_to_frac(x) ((x) << FRAC_BITS)
 #define PERI_PMC10_OFFSET 	0x28
 #define PERI_PMC12_OFFSET	0x30
 
 struct hisi_sensor {
 	void __iomem *mmio_base;
 	struct thermal_zone_device *tzd;
-	unsigned long prev_temp;
-	u32 alpha;
 };
 
 static struct hisi_sensor hisi_temp_sensor;
-
-static inline s64 mul_frac(s64 x, s64 y)
-{
-	return (x * y) >> FRAC_BITS;
-}
 
 static int get_sensor_value(u32 *val, void __iomem *mmio_base)
 {
@@ -57,26 +48,13 @@ static int get_temp_value(void *data, int *temp)
 	struct hisi_sensor *sensor = (struct hisi_sensor *)data;
 	u32 val;
 	int ret;
-	unsigned long est_temp;
 
 	ret = get_sensor_value(&val, sensor->mmio_base);
 	
 	if (ret)
 		return ret;
 
-	if (!sensor->prev_temp)
-		sensor->prev_temp = val;
-
-	est_temp = mul_frac(sensor->alpha, val) +
-		mul_frac((int_to_frac(1) - sensor->alpha), sensor->prev_temp);
-
-	/**
-	 * alpha = 24, val = 55000
-	 * ((24 * 55000) >> 8) + ((((1 << 8) - 24) * 55000) >> 8)
-	 */
-
-	sensor->prev_temp = est_temp;
-	*temp = (int)est_temp;
+	*temp = (int)val;
 
 	return 0;
 }
@@ -100,15 +78,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
 		return PTR_ERR(sensor_data->mmio_base);
 	}
 
-	/*
-	 * alpha ~= 2 / (N + 1) with N the window of a rolling mean We
-	 * use 8-bit fixed point arithmetic.  For a rolling average of
-	 * window 20, alpha = 2 / (20 + 1) ~= 0.09523809523809523 .
-	 * In 8-bit fixed point arigthmetic, 0.09523809523809523 * 256
-	 * ~= 24
-	 */
-
-	sensor_data->alpha = 24;
 	sensor_data->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
 							    0,
 							    sensor_data,
