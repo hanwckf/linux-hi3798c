@@ -223,6 +223,21 @@
 			};
 		};
 
+		thermal-zones {
+			cpu {
+				polling-delay = <1000>;
+				polling-delay-passive = <1000>;
+				thermal-sensors = <&thermal>;
+			};
+		};
+
+		thermal: thermal@8a23000 {
+			compatible = "hisilicon,hi3798cv200-thermal";
+			reg = <0x8a23000 0x1000>;
+			#thermal-sensor-cells = <0>;
+			status = "okay";
+		};
+
 		uart0: serial@8b00000 {
 			compatible = "arm,pl011", "arm,primecell";
 			reg = <0x8b00000 0x1000>;
