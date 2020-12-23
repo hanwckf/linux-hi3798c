@@ -14,6 +14,7 @@
 #include <linux/mfd/syscon.h>
 #include <linux/module.h>
 #include <linux/of_device.h>
+#include <linux/of_address.h>
 #include <linux/phy/phy.h>
 #include <linux/regmap.h>
 #include <linux/reset.h>
@@ -47,6 +48,7 @@ struct histb_combphy_priv {
 	struct clk *ref_clk;
 	struct phy *phy;
 	struct histb_combphy_mode mode;
+	struct device_node *ahci_np;
 };
 
 static void nano_register_write(struct histb_combphy_priv *priv,
@@ -102,9 +104,45 @@ static int histb_combphy_set_mode(struct histb_combphy_priv *priv)
 				  hw_sel << mode->shift);
 }
 
+#define HI_SATA_PORT0_OFF          0x100
+#define SATA_PORT_PHYCTL1          0x48
+#define SATA_PORT_PHYCTL2          0x4c
+
+static void nano_tx_deemp_sata(void * __iomem sata_mmio, u32 deemp_value)
+{
+	unsigned int val;
+	val = readl(sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL1);
+	val &= ~(1<<8);
+	writel(val, sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL1);
+	udelay(20);
+
+	val = readl(sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL2);
+	val &= ~(0x1ff << 0);
+	val |= (deemp_value << 0);
+	writel(val, sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL2);
+	udelay(20);
+}
+
+static void nano_tx_margin_sata(void * __iomem sata_mmio, u32 margin_value)
+{
+	unsigned int val;
+	val = readl(sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL1);
+	val &= ~(1<<8);
+	writel(val, sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL1);
+	udelay(20);
+
+	val = readl(sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL2);
+	val &= ~(0x1ff << 9);
+	val |= (margin_value << 9);
+	writel(val, sata_mmio + HI_SATA_PORT0_OFF + SATA_PORT_PHYCTL2);
+	udelay(20);
+}
+
 static int histb_combphy_init(struct phy *phy)
 {
 	struct histb_combphy_priv *priv = phy_get_drvdata(phy);
+	struct histb_combphy_mode *mode = &priv->mode;
+	void __iomem *sata_mmio;
 	u32 val;
 	int ret;
 
@@ -123,18 +161,49 @@ static int histb_combphy_init(struct phy *phy)
 
 	reset_control_deassert(priv->por_rst);
 
-	/* Enable EP clock */
-	val = readl(priv->mmio + COMBPHY_CFG_REG);
-	val |= COMBPHY_CLKREF_OUT_OEN;
-	writel(val, priv->mmio + COMBPHY_CFG_REG);
+	if (mode->select == PHY_TYPE_SATA && priv->ahci_np) {
+		sata_mmio = of_iomap(priv->ahci_np, 0);
+		if (IS_ERR(sata_mmio)) {
+			ret = PTR_ERR(sata_mmio);
+			return ret;
+		}
+		dev_notice(&phy->dev, "enable SATA combphy\n");
 
-	/* Need to wait for EP clock stable */
-	mdelay(5);
+		nano_register_write(priv, 0x1, 0x4);
 
-	/* Configure nano phy registers as suggested by vendor */
-	nano_register_write(priv, 0x1, 0x8);
-	nano_register_write(priv, 0xc, 0x9);
-	nano_register_write(priv, 0x1a, 0x4);
+		/* Config Nano De-emphasis Gen1&Gen2 0dB,Gen3 -3.5dB */
+		nano_tx_deemp_sata(sata_mmio, 0x52);
+
+		/* Config Nano TxMargin Gen1&Gen2 1000mV,Gen3 1100mV */
+		nano_tx_margin_sata(sata_mmio, 0x40);
+
+		/* Config SATA Port0 phy controller 6Gbps */
+		writel(0xE400000, sata_mmio + HI_SATA_PORT0_OFF + 0x74);
+		udelay(20);
+
+		/* Config Spin-up */
+		//writel(0x600000, sata_mmio + HI_SATA_PORT0_OFF + 0x18);
+		//udelay(20);
+		writel(0x600002, sata_mmio + HI_SATA_PORT0_OFF + 0x18);
+
+		mdelay(5);//need to wait for sata link up
+
+		iounmap(sata_mmio);
+		sata_mmio = NULL;
+	} else {
+		/* Enable EP clock */
+		val = readl(priv->mmio + COMBPHY_CFG_REG);
+		val |= COMBPHY_CLKREF_OUT_OEN;
+		writel(val, priv->mmio + COMBPHY_CFG_REG);
+
+		/* Need to wait for EP clock stable */
+		mdelay(5);
+
+		/* Configure nano phy registers as suggested by vendor */
+		nano_register_write(priv, 0x1, 0x8);
+		nano_register_write(priv, 0xc, 0x9);
+		nano_register_write(priv, 0x1a, 0x4);
+	}
 
 	return 0;
 }
@@ -142,12 +211,15 @@ static int histb_combphy_init(struct phy *phy)
 static int histb_combphy_exit(struct phy *phy)
 {
 	struct histb_combphy_priv *priv = phy_get_drvdata(phy);
+	struct histb_combphy_mode *mode = &priv->mode;
 	u32 val;
 
-	/* Disable EP clock */
-	val = readl(priv->mmio + COMBPHY_CFG_REG);
-	val &= ~COMBPHY_CLKREF_OUT_OEN;
-	writel(val, priv->mmio + COMBPHY_CFG_REG);
+	if (mode->select != PHY_TYPE_SATA) {
+		/* Disable EP clock */
+		val = readl(priv->mmio + COMBPHY_CFG_REG);
+		val &= ~COMBPHY_CLKREF_OUT_OEN;
+		writel(val, priv->mmio + COMBPHY_CFG_REG);
+	}
 
 	reset_control_assert(priv->por_rst);
 	clk_disable_unprepare(priv->ref_clk);
@@ -194,6 +266,7 @@ static int histb_combphy_probe(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	struct histb_combphy_priv *priv;
 	struct device_node *np = dev->of_node;
+	struct device_node *ahci_np;
 	struct histb_combphy_mode *mode;
 	u32 vals[3];
 	int ret;
@@ -206,6 +279,14 @@ static int histb_combphy_probe(struct platform_device *pdev)
 	if (IS_ERR(priv->mmio)) {
 		ret = PTR_ERR(priv->mmio);
 		return ret;
+	}
+
+	ahci_np = of_parse_phandle(np, "sata-controller", 0);
+	if (!ahci_np) {
+		dev_dbg(dev, "could not find sata-controller node\n");
+		priv->ahci_np = NULL;
+	} else {
+		priv->ahci_np = ahci_np;
 	}
 
 	priv->syscon = syscon_node_to_regmap(np->parent);

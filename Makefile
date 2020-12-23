@@ -1,5 +1,5 @@
-KDIR ?= linux-5.4
-KCFG ?= sn1-5.4.config
+KDIR ?= linux-5.10
+KCFG ?= sn1-5.10.config
 CROSS_GCC ?= aarch64-linux-gnu-
 
 DTB := hisilicon/hi3798cv200-imou-sn1.dtb
