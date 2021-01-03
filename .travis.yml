@@ -8,8 +8,7 @@ addons:
     - u-boot-tools
     - coreutils
 env:
-- KDIR=linux-5.4 KCFG=sn1-5.4.config toolchain=gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu toolchain_url=https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/9.2-2019.12/binrel CROSS_GCC=aarch64-none-linux-gnu-
-- KDIR=linux-5.8 KCFG=sn1-5.8.config toolchain=gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu toolchain_url=https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/9.2-2019.12/binrel CROSS_GCC=aarch64-none-linux-gnu-
+- toolchain=gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu toolchain_url=https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-a/9.2-2019.12/binrel CROSS_GCC=aarch64-none-linux-gnu-
 
 before_script:
 - curl -LO ${toolchain_url}/${toolchain}.tar.xz
