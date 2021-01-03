@@ -290,6 +290,9 @@ static void hix5hd2_config_port(struct net_device *dev, u32 speed, u32 duplex)
 	priv->duplex = duplex;
 
 	switch (priv->phy_mode) {
+	case PHY_INTERFACE_MODE_RGMII_RXID:
+	case PHY_INTERFACE_MODE_RGMII_TXID:
+	case PHY_INTERFACE_MODE_RGMII_ID:
 	case PHY_INTERFACE_MODE_RGMII:
 		if (speed == SPEED_1000)
 			val = RGMII_SPEED_1000;
@@ -848,6 +851,8 @@ static int hix5hd2_net_open(struct net_device *dev)
 		clk_disable_unprepare(priv->mac_core_clk);
 		return -ENODEV;
 	}
+
+	phy_attached_info(phy);
 
 	phy_start(phy);
 	hix5hd2_hw_init(priv);
